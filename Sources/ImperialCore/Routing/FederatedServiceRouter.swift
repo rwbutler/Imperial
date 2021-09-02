@@ -108,6 +108,10 @@ extension FederatedServiceRouter {
             .flatMap { buffer in
                 return request.client.post(url, headers: self.callbackHeaders) { $0.body = buffer }
             }.flatMapThrowing { response in
+                let responseDescriptionStr = response.description
+                guard responseDescriptionStr.contains("access_token") else {
+                    throw Abort(.internalServerError, reason: responseDescriptionStr)
+                }
                 return try response.content.get(String.self, at: ["access_token"])
             }
     }
